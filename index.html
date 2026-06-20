@@ -161,6 +161,81 @@
             color: #4a5568;
         }
 
+        /* ===== Opiniones de usuarios ===== */
+        .form-opinion {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 480px;
+            margin: 0 auto 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .form-opinion label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .form-opinion input,
+        .form-opinion textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .calificacion-input {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            font-size: 34px;
+            line-height: 1;
+            margin-bottom: 18px;
+            user-select: none;
+        }
+        .estrella-input {
+            color: #d0d4d9;
+            cursor: pointer;
+            transition: color 0.15s ease, transform 0.1s ease;
+        }
+        .estrella-input:hover {
+            transform: scale(1.1);
+        }
+        .estrella-input.activa {
+            color: #f1c40f;
+        }
+        .form-opinion button {
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+        #mensaje-estado {
+            text-align: center;
+            font-size: 14px;
+            min-height: 18px;
+            margin-top: 10px;
+        }
+        #promedio-calificacion {
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        .estrellas-mostradas {
+            color: #f1c40f;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .opinion-fecha {
+            font-size: 12px;
+            color: #8a93a0;
+            margin-top: 8px;
+        }
+
         /* ===== Contacto ===== */
         .contacto {
             background-color: #2c3e50;
@@ -191,6 +266,7 @@
                 <li><a href="#servicios">Servicios</a></li>
                 <li><a href="#testimonios">Testimonios</a></li>
                 <li><a href="#cursos">Cursos</a></li>
+                <li><a href="#comentarios">Comentarios</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
         </nav>
@@ -242,16 +318,28 @@
     </section>
 
     <!-- ===== TESTIMONIOS ===== -->
-<script src="https://giscus.app/client.js"
-  data-repo="tu-usuario/tu-repo"
-  data-repo-id="TU_REPO_ID"
-  data-category="General"
-  data-category-id="TU_CATEGORY_ID"
-  data-mapping="pathname"
-  data-theme="light"
-  crossorigin="anonymous"
-  async>
-</script>
+    <section id="testimonios">
+        <h2 class="section-titulo">Testimonios</h2>
+        <p class="section-subtitulo">Lo que dicen quienes ya completaron su proceso</p>
+        <div class="testimonios-grid">
+            <div class="testimonio-card">
+                <p class="texto">"El acompañamiento fue clave para terminar mi tesis a tiempo. La asesoría en el análisis estadístico me dio mucha claridad."</p>
+                <div class="autor">María Fernanda Restrepo</div>
+                <div class="rol">Estudiante de Maestría</div>
+            </div>
+            <div class="testimonio-card">
+                <p class="texto">"Excelente guía metodológica. Me ayudó a estructurar mi revisión sistemática de forma rigurosa y ordenada."</p>
+                <div class="autor">Carlos Andrés Gómez</div>
+                <div class="rol">Estudiante de Doctorado</div>
+            </div>
+            <div class="testimonio-card">
+                <p class="texto">"Recomiendo totalmente la asesoría. El análisis cualitativo en Atlas.ti quedó mucho más profesional gracias a su apoyo."</p>
+                <div class="autor">Laura Jiménez</div>
+                <div class="rol">Estudiante de Pregrado</div>
+            </div>
+        </div>
+    </section>
+
     <!-- ===== CURSOS ===== -->
     <section id="cursos">
         <h2 class="section-titulo">Cursos Disponibles</h2>
@@ -262,11 +350,161 @@
         </div>
     </section>
 
+    <!-- ===== COMENTARIOS / OPINIONES ===== -->
+    <section id="comentarios">
+        <h2 class="section-titulo">Opiniones de Nuestros Usuarios</h2>
+        <p class="section-subtitulo">Cuéntanos tu experiencia y califica el servicio</p>
+
+        <form id="form-opinion" class="form-opinion">
+            <label for="nombre-opinion">Tu nombre</label>
+            <input type="text" id="nombre-opinion" maxlength="60" required>
+
+            <label>Tu calificación</label>
+            <div class="calificacion-input" id="calificacion-input">
+                <span class="estrella-input" data-valor="1">★</span>
+                <span class="estrella-input" data-valor="2">★</span>
+                <span class="estrella-input" data-valor="3">★</span>
+                <span class="estrella-input" data-valor="4">★</span>
+                <span class="estrella-input" data-valor="5">★</span>
+            </div>
+
+            <label for="comentario-opinion">Tu opinión sobre el servicio</label>
+            <textarea id="comentario-opinion" rows="4" maxlength="500" required></textarea>
+
+            <button type="submit" class="btn-principal">Enviar mi opinión</button>
+            <p id="mensaje-estado"></p>
+        </form>
+
+        <p id="promedio-calificacion">Cargando opiniones...</p>
+        <div id="lista-opiniones" class="testimonios-grid"></div>
+    </section>
+
+    <!-- Firebase: guarda y muestra las opiniones de los usuarios en tiempo real -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, addDoc, query, orderBy,
+            onSnapshot, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // 1) Reemplaza estos valores con los de TU proyecto de Firebase
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const opinionesRef = collection(db, "opiniones");
+
+        // ----- Selección de estrellas -----
+        let calificacionSeleccionada = 0;
+        const estrellas = document.querySelectorAll('#calificacion-input .estrella-input');
+        estrellas.forEach((estrella) => {
+            estrella.addEventListener('click', () => {
+                calificacionSeleccionada = parseInt(estrella.dataset.valor, 10);
+                estrellas.forEach((s) => {
+                    s.classList.toggle('activa', parseInt(s.dataset.valor, 10) <= calificacionSeleccionada);
+                });
+            });
+        });
+
+        // ----- Envío del formulario -----
+        const formulario = document.getElementById('form-opinion');
+        const mensajeEstado = document.getElementById('mensaje-estado');
+
+        formulario.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            const nombre = document.getElementById('nombre-opinion').value.trim();
+            const comentario = document.getElementById('comentario-opinion').value.trim();
+
+            if (!nombre || !comentario || calificacionSeleccionada === 0) {
+                mensajeEstado.textContent = "Por favor completa tu nombre, tu opinión y selecciona una calificación.";
+                mensajeEstado.style.color = "#c0392b";
+                return;
+            }
+
+            try {
+                await addDoc(opinionesRef, {
+                    nombre,
+                    comentario,
+                    calificacion: calificacionSeleccionada,
+                    fecha: serverTimestamp()
+                });
+                mensajeEstado.textContent = "¡Gracias por tu opinión!";
+                mensajeEstado.style.color = "#27ae60";
+                formulario.reset();
+                calificacionSeleccionada = 0;
+                estrellas.forEach((s) => s.classList.remove('activa'));
+            } catch (error) {
+                mensajeEstado.textContent = "Hubo un problema al enviar tu opinión. Intenta de nuevo.";
+                mensajeEstado.style.color = "#c0392b";
+                console.error(error);
+            }
+        });
+
+        // ----- Mostrar opiniones en tiempo real -----
+        const listaOpiniones = document.getElementById('lista-opiniones');
+        const promedioEl = document.getElementById('promedio-calificacion');
+        const consulta = query(opinionesRef, orderBy('fecha', 'desc'));
+
+        onSnapshot(consulta, (snapshot) => {
+            listaOpiniones.innerHTML = "";
+            let suma = 0;
+            let total = 0;
+
+            snapshot.forEach((doc) => {
+                const datos = doc.data();
+                total++;
+                suma += datos.calificacion;
+
+                const tarjeta = document.createElement('div');
+                tarjeta.className = 'testimonio-card';
+
+                const estrellasMostradas = document.createElement('div');
+                estrellasMostradas.className = 'estrellas-mostradas';
+                estrellasMostradas.textContent = '★'.repeat(datos.calificacion) + '☆'.repeat(5 - datos.calificacion);
+
+                const texto = document.createElement('p');
+                texto.className = 'texto';
+                texto.textContent = '"' + datos.comentario + '"';
+
+                const autor = document.createElement('div');
+                autor.className = 'autor';
+                autor.textContent = datos.nombre;
+
+                tarjeta.appendChild(estrellasMostradas);
+                tarjeta.appendChild(texto);
+                tarjeta.appendChild(autor);
+
+                if (datos.fecha && datos.fecha.toDate) {
+                    const fechaDiv = document.createElement('div');
+                    fechaDiv.className = 'opinion-fecha';
+                    fechaDiv.textContent = datos.fecha.toDate().toLocaleDateString('es-CO');
+                    tarjeta.appendChild(fechaDiv);
+                }
+
+                listaOpiniones.appendChild(tarjeta);
+            });
+
+            if (total > 0) {
+                const promedio = (suma / total).toFixed(1);
+                promedioEl.textContent = `Calificación promedio: ${promedio} / 5 ⭐ (${total} opinión${total > 1 ? 'es' : ''})`;
+            } else {
+                promedioEl.textContent = "Sé el primero en dejar tu opinión.";
+            }
+        });
+    </script>
+
     <!-- ===== CONTACTO ===== -->
     <section id="contacto" class="contacto" style="max-width: 100%;">
         <h2>¿Listo para avanzar con tu tesis?</h2>
         <p>Escríbeme y conversemos sobre cómo puedo ayudarte en tu proceso de investigación.</p>
-        <a class="btn-principal" href="andriujha17@gmail.com">Escríbeme un correo</a>
+        <a class="btn-principal" href="mailto:andriujha17@gmail.com">Escríbeme un correo</a>
     </section>
 
     <footer>
