@@ -121,16 +121,32 @@
         }
 
         /* ===== Testimonios ===== */
-      <script src="https://giscus.app/client.js"
-  data-repo="tu-usuario/tu-repo"
-  data-repo-id="TU_REPO_ID"
-  data-category="General"
-  data-category-id="TU_CATEGORY_ID"
-  data-mapping="pathname"
-  data-theme="light"
-  crossorigin="anonymous"
-  async>
-</script>
+        .testimonios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .testimonio-card {
+            background: white;
+            border-left: 4px solid #27ae60;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .testimonio-card p.texto {
+            font-style: italic;
+            color: #3b4654;
+            margin-bottom: 15px;
+        }
+        .testimonio-card .autor {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .testimonio-card .rol {
+            font-size: 13px;
+            color: #8a93a0;
+        }
 
         /* ===== Cursos (enlace al catálogo) ===== */
         .cursos-cta {
@@ -226,30 +242,16 @@
     </section>
 
     <!-- ===== TESTIMONIOS ===== -->
-    <section id="testimonios" style="background-color: #eef1f5; max-width: 100%;">
-        <div style="max-width: 900px; margin: 0 auto;">
-            <h2 class="section-titulo">Lo que dicen mis estudiantes</h2>
-            <p class="section-subtitulo">Experiencias reales de quienes han confiado en esta asesoría</p>
-            <div class="testimonios-grid">
-                <div class="testimonio-card">
-                    <p class="texto">"Escribe aquí el comentario del estudiante sobre su experiencia con la asesoría."</p>
-                    <p class="autor">Nombre del estudiante</p>
-                    <p class="rol">Programa / Universidad</p>
-                </div>
-                <div class="testimonio-card">
-                    <p class="texto">"Escribe aquí el comentario del estudiante sobre su experiencia con la asesoría."</p>
-                    <p class="autor">Nombre del estudiante</p>
-                    <p class="rol">Programa / Universidad</p>
-                </div>
-                <div class="testimonio-card">
-                    <p class="texto">"Escribe aquí el comentario del estudiante sobre su experiencia con la asesoría."</p>
-                    <p class="autor">Nombre del estudiante</p>
-                    <p class="rol">Programa / Universidad</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
+<script src="https://giscus.app/client.js"
+  data-repo="tu-usuario/tu-repo"
+  data-repo-id="TU_REPO_ID"
+  data-category="General"
+  data-category-id="TU_CATEGORY_ID"
+  data-mapping="pathname"
+  data-theme="light"
+  crossorigin="anonymous"
+  async>
+</script>
     <!-- ===== CURSOS ===== -->
     <section id="cursos">
         <h2 class="section-titulo">Cursos Disponibles</h2>
