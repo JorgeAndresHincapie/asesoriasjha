@@ -235,6 +235,19 @@
             color: #8a93a0;
             margin-top: 8px;
         }
+        .aviso-config {
+            background-color: #fdecea;
+            border: 1px solid #e74c3c;
+            color: #c0392b;
+            border-radius: 8px;
+            padding: 16px 20px;
+            max-width: 480px;
+            margin: 0 auto 30px;
+            font-size: 14px;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .aviso-config strong { display: block; margin-bottom: 6px; }
 
         /* ===== Contacto ===== */
         .contacto {
@@ -264,6 +277,7 @@
         <nav>
             <ul>
                 <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#testimonios">Testimonios</a></li>
                 <li><a href="#cursos">Cursos</a></li>
                 <li><a href="#comentarios">Comentarios</a></li>
                 <li><a href="#contacto">Contacto</a></li>
@@ -316,7 +330,28 @@
         </div>
     </section>
 
-    
+    <!-- ===== TESTIMONIOS ===== -->
+    <section id="testimonios">
+        <h2 class="section-titulo">Testimonios</h2>
+        <p class="section-subtitulo">Lo que dicen quienes ya completaron su proceso</p>
+        <div class="testimonios-grid">
+            <div class="testimonio-card">
+                <p class="texto">"El acompañamiento fue clave para terminar mi tesis a tiempo. La asesoría en el análisis estadístico me dio mucha claridad."</p>
+                <div class="autor">María Fernanda Restrepo</div>
+                <div class="rol">Estudiante de Maestría</div>
+            </div>
+            <div class="testimonio-card">
+                <p class="texto">"Excelente guía metodológica. Me ayudó a estructurar mi revisión sistemática de forma rigurosa y ordenada."</p>
+                <div class="autor">Carlos Andrés Gómez</div>
+                <div class="rol">Estudiante de Doctorado</div>
+            </div>
+            <div class="testimonio-card">
+                <p class="texto">"Recomiendo totalmente la asesoría. El análisis cualitativo en Atlas.ti quedó mucho más profesional gracias a su apoyo."</p>
+                <div class="autor">Laura Jiménez</div>
+                <div class="rol">Estudiante de Pregrado</div>
+            </div>
+        </div>
+    </section>
 
     <!-- ===== CURSOS ===== -->
     <section id="cursos">
@@ -332,6 +367,11 @@
     <section id="comentarios">
         <h2 class="section-titulo">Opiniones de Nuestros Usuarios</h2>
         <p class="section-subtitulo">Cuéntanos tu experiencia y califica el servicio</p>
+
+        <div id="aviso-config" class="aviso-config" style="display:none;">
+            <strong>⚠️ Falta configurar Firebase</strong>
+            Este formulario necesita un proyecto de Firebase real para guardar y mostrar las opiniones de todos los visitantes. Reemplaza los valores de ejemplo en "firebaseConfig" (dentro del código fuente) con los datos de tu propio proyecto. Sigue las instrucciones que te dieron junto con este archivo.
+        </div>
 
         <form id="form-opinion" class="form-opinion">
             <label for="nombre-opinion">Tu nombre</label>
@@ -365,7 +405,11 @@
             onSnapshot, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // 1) Reemplaza estos valores con los de TU proyecto de Firebase
+        // =====================================================================
+        // 1) PASO OBLIGATORIO: reemplaza estos valores con los de TU proyecto
+        //    de Firebase. Sin esto, el formulario NO funcionará.
+        //    Instrucciones completas en el mensaje de Claude / README.
+        // =====================================================================
         const firebaseConfig = {
             apiKey: "TU_API_KEY",
             authDomain: "TU_PROYECTO.firebaseapp.com",
@@ -374,6 +418,16 @@
             messagingSenderId: "TU_SENDER_ID",
             appId: "TU_APP_ID"
         };
+
+        const avisoConfig = document.getElementById('aviso-config');
+        const configEstaSinCompletar = firebaseConfig.apiKey === "TU_API_KEY" || !firebaseConfig.apiKey;
+
+        if (configEstaSinCompletar) {
+            // Muestra un aviso visible en la página en vez de fallar en silencio
+            avisoConfig.style.display = "block";
+            document.getElementById('promedio-calificacion').textContent =
+                "Las opiniones no se pueden cargar todavía (falta configurar Firebase).";
+        }
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -397,6 +451,13 @@
 
         formulario.addEventListener('submit', async (evento) => {
             evento.preventDefault();
+
+            if (configEstaSinCompletar) {
+                mensajeEstado.textContent = "El formulario aún no está conectado a una base de datos. Configura Firebase primero.";
+                mensajeEstado.style.color = "#c0392b";
+                return;
+            }
+
             const nombre = document.getElementById('nombre-opinion').value.trim();
             const comentario = document.getElementById('comentario-opinion').value.trim();
 
@@ -419,63 +480,65 @@
                 calificacionSeleccionada = 0;
                 estrellas.forEach((s) => s.classList.remove('activa'));
             } catch (error) {
-                mensajeEstado.textContent = "Hubo un problema al enviar tu opinión. Intenta de nuevo.";
+                mensajeEstado.textContent = "Hubo un problema al enviar tu opinión. Revisa las reglas de seguridad de Firestore.";
                 mensajeEstado.style.color = "#c0392b";
                 console.error(error);
             }
         });
 
         // ----- Mostrar opiniones en tiempo real -----
-        const listaOpiniones = document.getElementById('lista-opiniones');
-        const promedioEl = document.getElementById('promedio-calificacion');
-        const consulta = query(opinionesRef, orderBy('fecha', 'desc'));
+        if (!configEstaSinCompletar) {
+            const listaOpiniones = document.getElementById('lista-opiniones');
+            const promedioEl = document.getElementById('promedio-calificacion');
+            const consulta = query(opinionesRef, orderBy('fecha', 'desc'));
 
-        onSnapshot(consulta, (snapshot) => {
-            listaOpiniones.innerHTML = "";
-            let suma = 0;
-            let total = 0;
+            onSnapshot(consulta, (snapshot) => {
+                listaOpiniones.innerHTML = "";
+                let suma = 0;
+                let total = 0;
 
-            snapshot.forEach((doc) => {
-                const datos = doc.data();
-                total++;
-                suma += datos.calificacion;
+                snapshot.forEach((doc) => {
+                    const datos = doc.data();
+                    total++;
+                    suma += datos.calificacion;
 
-                const tarjeta = document.createElement('div');
-                tarjeta.className = 'testimonio-card';
+                    const tarjeta = document.createElement('div');
+                    tarjeta.className = 'testimonio-card';
 
-                const estrellasMostradas = document.createElement('div');
-                estrellasMostradas.className = 'estrellas-mostradas';
-                estrellasMostradas.textContent = '★'.repeat(datos.calificacion) + '☆'.repeat(5 - datos.calificacion);
+                    const estrellasMostradas = document.createElement('div');
+                    estrellasMostradas.className = 'estrellas-mostradas';
+                    estrellasMostradas.textContent = '★'.repeat(datos.calificacion) + '☆'.repeat(5 - datos.calificacion);
 
-                const texto = document.createElement('p');
-                texto.className = 'texto';
-                texto.textContent = '"' + datos.comentario + '"';
+                    const texto = document.createElement('p');
+                    texto.className = 'texto';
+                    texto.textContent = '"' + datos.comentario + '"';
 
-                const autor = document.createElement('div');
-                autor.className = 'autor';
-                autor.textContent = datos.nombre;
+                    const autor = document.createElement('div');
+                    autor.className = 'autor';
+                    autor.textContent = datos.nombre;
 
-                tarjeta.appendChild(estrellasMostradas);
-                tarjeta.appendChild(texto);
-                tarjeta.appendChild(autor);
+                    tarjeta.appendChild(estrellasMostradas);
+                    tarjeta.appendChild(texto);
+                    tarjeta.appendChild(autor);
 
-                if (datos.fecha && datos.fecha.toDate) {
-                    const fechaDiv = document.createElement('div');
-                    fechaDiv.className = 'opinion-fecha';
-                    fechaDiv.textContent = datos.fecha.toDate().toLocaleDateString('es-CO');
-                    tarjeta.appendChild(fechaDiv);
+                    if (datos.fecha && datos.fecha.toDate) {
+                        const fechaDiv = document.createElement('div');
+                        fechaDiv.className = 'opinion-fecha';
+                        fechaDiv.textContent = datos.fecha.toDate().toLocaleDateString('es-CO');
+                        tarjeta.appendChild(fechaDiv);
+                    }
+
+                    listaOpiniones.appendChild(tarjeta);
+                });
+
+                if (total > 0) {
+                    const promedio = (suma / total).toFixed(1);
+                    promedioEl.textContent = `Calificación promedio: ${promedio} / 5 ⭐ (${total} opinión${total > 1 ? 'es' : ''})`;
+                } else {
+                    promedioEl.textContent = "Sé el primero en dejar tu opinión.";
                 }
-
-                listaOpiniones.appendChild(tarjeta);
             });
-
-            if (total > 0) {
-                const promedio = (suma / total).toFixed(1);
-                promedioEl.textContent = `Calificación promedio: ${promedio} / 5 ⭐ (${total} opinión${total > 1 ? 'es' : ''})`;
-            } else {
-                promedioEl.textContent = "Sé el primero en dejar tu opinión.";
-            }
-        });
+        }
     </script>
 
     <!-- ===== CONTACTO ===== -->
